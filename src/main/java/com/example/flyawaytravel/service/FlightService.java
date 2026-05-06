@@ -1,0 +1,52 @@
+package com.example.flyawaytravel.service;
+
+import com.example.flyawaytravel.dto.request.FlightCreateRequest;
+import com.example.flyawaytravel.dto.response.FlightResponse;
+import com.example.flyawaytravel.entity.Flight;
+import com.example.flyawaytravel.repository.FlightRepository;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class FlightService {
+
+    private final FlightRepository flightRepository;
+    private final ModelMapper modelMapper;
+
+    public FlightResponse createFlight(FlightCreateRequest request) {
+        if (flightRepository.existsByFlightNumber(request.getFlightNumber())) {
+            throw new IllegalArgumentException("Flight number already exists: " + request.getFlightNumber());
+        }
+
+        Flight flight = modelMapper.map(request, Flight.class);
+        Flight savedFlight = flightRepository.save(flight);
+        return modelMapper.map(savedFlight, FlightResponse.class);
+    }
+
+    public List<FlightResponse> searchFlights(String flightNumber, String airline, 
+                                             LocalDateTime startDate, LocalDateTime endDate) {
+        List<Flight> flights = flightRepository.searchFlights(flightNumber, airline, startDate, endDate);
+        return flights.stream()
+                .map(flight -> modelMapper.map(flight, FlightResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public FlightResponse getFlightById(Long id) {
+        Flight flight = flightRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Flight not found with id: " + id));
+        return modelMapper.map(flight, FlightResponse.class);
+    }
+
+    public List<FlightResponse> getAvailableFutureFlights() {
+        List<Flight> flights = flightRepository.findAvailableFutureFlights(LocalDateTime.now());
+        return flights.stream()
+                .map(flight -> modelMapper.map(flight, FlightResponse.class))
+                .collect(Collectors.toList());
+    }
+}
