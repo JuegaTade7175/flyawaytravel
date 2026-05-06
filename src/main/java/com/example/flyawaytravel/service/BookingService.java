@@ -25,6 +25,7 @@ public class BookingService {
     private final FlightRepository flightRepository;
     private final UserService userService;
     private final ModelMapper modelMapper;
+    private final EmailConfirmationService emailConfirmationService;
 
     @Transactional
     public BookingResponse createBooking(BookingRequest request, Long userId) {
@@ -32,12 +33,13 @@ public class BookingService {
         Flight flight = flightRepository.findById(request.getFlightId())
                 .orElseThrow(() -> new IllegalArgumentException("Flight not found with id: " + request.getFlightId()));
 
-        if (flight.getAvailableSeats() <= 0) {
-            throw new IllegalArgumentException("No available seats for this flight");
+        LocalDateTime now = LocalDateTime.now();
+        if (!flight.getDepartureTime().isAfter(now)) {
+            throw new IllegalArgumentException("Cannot book past or in-transit flights");
         }
 
-        if (flight.getDepartureTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Cannot book past flights");
+        if (flight.getAvailableSeats() <= 0) {
+            throw new IllegalArgumentException("No available seats for this flight");
         }
 
         int currentBookings = bookingRepository.countBookingsByFlightId(flight.getId());
@@ -61,9 +63,11 @@ public class BookingService {
         booking.setFlight(flight);
         booking.setUser(user);
         booking.setCustomerName(user.getFullName());
-        booking.setBookingDate(LocalDateTime.now());
+        booking.setBookingDate(now);
 
         Booking savedBooking = bookingRepository.save(booking);
+
+        emailConfirmationService.saveConfirmationEmail(savedBooking);
 
         BookingResponse response = modelMapper.map(savedBooking, BookingResponse.class);
         response.setFlight(modelMapper.map(flight, FlightResponse.class));
