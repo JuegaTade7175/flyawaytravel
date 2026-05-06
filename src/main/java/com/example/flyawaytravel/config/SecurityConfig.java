@@ -29,12 +29,10 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos
                 .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/flights/create").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/cleanup").permitAll()
-                // Todo lo demás requiere autenticación
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
