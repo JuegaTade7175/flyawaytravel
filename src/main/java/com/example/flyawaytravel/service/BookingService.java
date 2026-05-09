@@ -9,7 +9,6 @@ import com.example.flyawaytravel.entity.User;
 import com.example.flyawaytravel.repository.BookingRepository;
 import com.example.flyawaytravel.repository.FlightRepository;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +23,6 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final FlightRepository flightRepository;
     private final UserService userService;
-    private final ModelMapper modelMapper;
     private final EmailConfirmationService emailConfirmationService;
 
     @Transactional
@@ -69,30 +67,41 @@ public class BookingService {
 
         emailConfirmationService.saveConfirmationEmail(savedBooking);
 
-        BookingResponse response = modelMapper.map(savedBooking, BookingResponse.class);
-        response.setFlight(modelMapper.map(flight, FlightResponse.class));
-
-        return response;
+        return toResponse(savedBooking);
     }
 
     public BookingResponse getBookingById(Long id, Long userId) {
         Booking booking = bookingRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con el id: " + id));
-
-        BookingResponse response = modelMapper.map(booking, BookingResponse.class);
-        response.setFlight(modelMapper.map(booking.getFlight(), FlightResponse.class));
-
-        return response;
+        return toResponse(booking);
     }
 
     public List<BookingResponse> getUserBookings(Long userId) {
-        List<Booking> bookings = bookingRepository.findByUserId(userId);
-        return bookings.stream()
-                .map(booking -> {
-                    BookingResponse response = modelMapper.map(booking, BookingResponse.class);
-                    response.setFlight(modelMapper.map(booking.getFlight(), FlightResponse.class));
-                    return response;
-                })
+        return bookingRepository.findByUserId(userId)
+                .stream()
+                .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    private BookingResponse toResponse(Booking booking) {
+        Flight flight = booking.getFlight();
+        FlightResponse flightResponse = new FlightResponse(
+                flight.getId(),
+                flight.getFlightNumber(),
+                flight.getAirline(),
+                flight.getDepartureTime(),
+                flight.getArrivalTime(),
+                flight.getAvailableSeats(),
+                flight.getOrigin(),
+                flight.getDestination(),
+                flight.getCreatedAt()
+        );
+
+        return new BookingResponse(
+                booking.getId(),
+                flightResponse,
+                booking.getCustomerName(),
+                booking.getBookingDate()
+        );
     }
 }

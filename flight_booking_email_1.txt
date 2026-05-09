@@ -1,0 +1,19 @@
+========================================
+       CONFIRMACIÓN DE RESERVA DE VUELO      
+========================================
+
+ID de Reserva: 1
+Nombre del Cliente: Tadeo Cardenas
+Fecha de Reserva: 2026-05-09T09:33:52.594703
+
+--- Detalles del Vuelo ---
+Número de Vuelo: LA500
+Aerolínea: LATAM Airlines
+Origen: Lima
+Destino: Bogotá
+Hora de Salida: 2026-12-01T08:00:00
+Hora de Llegada: 2026-12-01T12:00:00
+
+========================================
+¡Gracias por elegir Fly Away Travel!
+========================================
