@@ -31,20 +31,20 @@ public class BookingService {
     public BookingResponse createBooking(BookingRequest request, Long userId) {
         User user = userService.findById(userId);
         Flight flight = flightRepository.findById(request.getFlightId())
-                .orElseThrow(() -> new IllegalArgumentException("Flight not found with id: " + request.getFlightId()));
+                .orElseThrow(() -> new IllegalArgumentException("Vuelo no encontrado con el id: " + request.getFlightId()));
 
         LocalDateTime now = LocalDateTime.now();
         if (!flight.getDepartureTime().isAfter(now)) {
-            throw new IllegalArgumentException("Cannot book past or in-transit flights");
+            throw new IllegalArgumentException("No se pueden reservar vuelos pasados o en tránsito");
         }
 
         if (flight.getAvailableSeats() <= 0) {
-            throw new IllegalArgumentException("No available seats for this flight");
+            throw new IllegalArgumentException("No hay asientos disponibles para este vuelo");
         }
 
         int currentBookings = bookingRepository.countBookingsByFlightId(flight.getId());
         if (currentBookings >= flight.getAvailableSeats()) {
-            throw new IllegalArgumentException("Flight is fully booked");
+            throw new IllegalArgumentException("El vuelo está completamente reservado");
         }
 
         List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(
@@ -56,7 +56,7 @@ public class BookingService {
         );
 
         if (!conflictingBookings.isEmpty()) {
-            throw new IllegalArgumentException("You have a conflicting booking with this flight schedule");
+            throw new IllegalArgumentException("Tienes una reserva conflictiva con este horario de vuelo");
         }
 
         Booking booking = new Booking();
@@ -77,7 +77,7 @@ public class BookingService {
 
     public BookingResponse getBookingById(Long id, Long userId) {
         Booking booking = bookingRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con el id: " + id));
 
         BookingResponse response = modelMapper.map(booking, BookingResponse.class);
         response.setFlight(modelMapper.map(booking.getFlight(), FlightResponse.class));

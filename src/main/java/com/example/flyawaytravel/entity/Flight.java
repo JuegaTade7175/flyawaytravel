@@ -21,32 +21,32 @@ public class Flight {
     private Long id;
 
     @Column(unique = true, nullable = false, length = 6)
-    @Pattern(regexp = "^[A-Z0-9]{1,6}$", message = "Flight number must contain only uppercase letters and numbers, max 6 characters")
-    @NotBlank(message = "Flight number is required")
+    @Pattern(regexp = "^[A-Z0-9]{1,6}$", message = "El número de vuelo debe contener solo letras mayúsculas y números, máximo 6 caracteres")
+    @NotBlank(message = "El número de vuelo es requerido")
     private String flightNumber;
 
     @Column(nullable = false)
-    @NotBlank(message = "Airline name is required")
+    @NotBlank(message = "El nombre de la aerolínea es requerido")
     private String airline;
 
     @Column(nullable = false)
-    @NotNull(message = "Departure time is required")
+    @NotNull(message = "La hora de salida es requerida")
     private LocalDateTime departureTime;
 
     @Column(nullable = false)
-    @NotNull(message = "Arrival time is required")
+    @NotNull(message = "La hora de llegada es requerida")
     private LocalDateTime arrivalTime;
 
     @Column(nullable = false)
-    @Min(value = 1, message = "Available seats must be greater than 0")
+    @Min(value = 1, message = "Los asientos disponibles deben ser mayores a 0")
     private Integer availableSeats;
 
     @Column(nullable = false)
-    @NotBlank(message = "Origin is required")
+    @NotBlank(message = "El origen es requerido")
     private String origin;
 
     @Column(nullable = false)
-    @NotBlank(message = "Destination is required")
+    @NotBlank(message = "El destino es requerido")
     private String destination;
 
     @CreationTimestamp
@@ -57,7 +57,7 @@ public class Flight {
     @PreUpdate
     private void validateTimes() {
         if (departureTime != null && arrivalTime != null && !departureTime.isBefore(arrivalTime)) {
-            throw new IllegalArgumentException("Departure time must be before arrival time");
+            throw new IllegalArgumentException("La hora de salida debe ser antes de la hora de llegada");
         }
     }
 }

@@ -19,7 +19,7 @@ public class UserService {
 
     public UserIdResponse registerUser(UserRegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists: " + request.getEmail());
+            throw new IllegalArgumentException("El correo electrónico ya existe: " + request.getEmail());
         }
 
         User user = modelMapper.map(request, User.class);
@@ -31,11 +31,11 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con el correo electrónico: " + email));
     }
 
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con el id: " + id));
     }
 }

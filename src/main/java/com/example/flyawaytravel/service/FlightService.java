@@ -21,7 +21,7 @@ public class FlightService {
 
     public FlightResponse createFlight(FlightCreateRequest request) {
         if (flightRepository.existsByFlightNumber(request.getFlightNumber())) {
-            throw new IllegalArgumentException("Flight number already exists: " + request.getFlightNumber());
+            throw new IllegalArgumentException("El número de vuelo ya existe: " + request.getFlightNumber());
         }
 
         Flight flight = modelMapper.map(request, Flight.class);
@@ -39,7 +39,7 @@ public class FlightService {
 
     public FlightResponse getFlightById(Long id) {
         Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Flight not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Vuelo no encontrado con el id: " + id));
         return modelMapper.map(flight, FlightResponse.class);
     }
 

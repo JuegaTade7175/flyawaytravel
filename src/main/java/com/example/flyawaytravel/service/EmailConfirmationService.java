@@ -21,28 +21,28 @@ public class EmailConfirmationService {
 
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write(content);
-            log.info("Confirmation email saved to file: {}", filename);
+            log.info("Correo de confirmación guardado en archivo: {}", filename);
         } catch (IOException e) {
-            log.error("Failed to save confirmation email for booking {}: {}", booking.getId(), e.getMessage());
+            log.error("Error al guardar correo de confirmación para reserva {}: {}", booking.getId(), e.getMessage());
         }
     }
 
     private String buildEmailContent(Booking booking) {
         return "========================================\n" +
-               "       FLIGHT BOOKING CONFIRMATION      \n" +
+               "       CONFIRMACIÓN DE RESERVA DE VUELO      \n" +
                "========================================\n\n" +
-               "Booking ID: " + booking.getId() + "\n" +
-               "Customer Name: " + booking.getCustomerName() + "\n" +
-               "Booking Date: " + booking.getBookingDate().format(ISO_FORMATTER) + "\n\n" +
-               "--- Flight Details ---\n" +
-               "Flight Number: " + booking.getFlight().getFlightNumber() + "\n" +
-               "Airline: " + booking.getFlight().getAirline() + "\n" +
-               "Origin: " + booking.getFlight().getOrigin() + "\n" +
-               "Destination: " + booking.getFlight().getDestination() + "\n" +
-               "Departure Time: " + booking.getFlight().getDepartureTime().format(ISO_FORMATTER) + "\n" +
-               "Arrival Time: " + booking.getFlight().getArrivalTime().format(ISO_FORMATTER) + "\n\n" +
+               "ID de Reserva: " + booking.getId() + "\n" +
+               "Nombre del Cliente: " + booking.getCustomerName() + "\n" +
+               "Fecha de Reserva: " + booking.getBookingDate().format(ISO_FORMATTER) + "\n\n" +
+               "--- Detalles del Vuelo ---\n" +
+               "Número de Vuelo: " + booking.getFlight().getFlightNumber() + "\n" +
+               "Aerolínea: " + booking.getFlight().getAirline() + "\n" +
+               "Origen: " + booking.getFlight().getOrigin() + "\n" +
+               "Destino: " + booking.getFlight().getDestination() + "\n" +
+               "Hora de Salida: " + booking.getFlight().getDepartureTime().format(ISO_FORMATTER) + "\n" +
+               "Hora de Llegada: " + booking.getFlight().getArrivalTime().format(ISO_FORMATTER) + "\n\n" +
                "========================================\n" +
-               "Thank you for choosing Fly Away Travel!\n" +
+               "¡Gracias por elegir Fly Away Travel!\n" +
                "========================================\n";
     }
 }
