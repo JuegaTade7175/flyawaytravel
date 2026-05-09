@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BookingService {
 
     private final BookingRepository bookingRepository;
@@ -25,7 +26,6 @@ public class BookingService {
     private final UserService userService;
     private final EmailConfirmationService emailConfirmationService;
 
-    @Transactional
     public BookingResponse createBooking(BookingRequest request, Long userId) {
         User user = userService.findById(userId);
         Flight flight = flightRepository.findById(request.getFlightId())
@@ -35,7 +35,6 @@ public class BookingService {
         if (!flight.getDepartureTime().isAfter(now)) {
             throw new IllegalArgumentException("No se pueden reservar vuelos pasados o en tránsito");
         }
-
         if (flight.getAvailableSeats() <= 0) {
             throw new IllegalArgumentException("No hay asientos disponibles para este vuelo");
         }
@@ -47,12 +46,9 @@ public class BookingService {
 
         List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(
                 user,
-                flight.getDepartureTime(),
-                flight.getArrivalTime(),
-                flight.getDepartureTime(),
-                flight.getArrivalTime()
+                flight.getDepartureTime(), flight.getArrivalTime(),
+                flight.getDepartureTime(), flight.getArrivalTime()
         );
-
         if (!conflictingBookings.isEmpty()) {
             throw new IllegalArgumentException("Tienes una reserva conflictiva con este horario de vuelo");
         }
@@ -64,9 +60,7 @@ public class BookingService {
         booking.setBookingDate(now);
 
         Booking savedBooking = bookingRepository.save(booking);
-
         emailConfirmationService.saveConfirmationEmail(savedBooking);
-
         return toResponse(savedBooking);
     }
 
@@ -96,7 +90,6 @@ public class BookingService {
                 flight.getDestination(),
                 flight.getCreatedAt()
         );
-
         return new BookingResponse(
                 booking.getId(),
                 flightResponse,
