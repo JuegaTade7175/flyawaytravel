@@ -34,7 +34,7 @@
   ],
   "item": [
     {
-      "name": "🧹 CLEANUP",
+      "name": "CLEANUP",
       "item": [
         {
           "name": "DELETE /cleanup",
@@ -68,10 +68,10 @@
       ]
     },
     {
-      "name": "✈️ VUELOS (sin auth)",
+      "name": "VUELOS (sin auth)",
       "item": [
         {
-          "name": "POST /flights/create ✅",
+          "name": "POST /flights/create",
           "event": [
             {
               "listen": "test",
@@ -107,7 +107,7 @@
           "response": []
         },
         {
-          "name": "POST /flights/create - número duplicado ❌",
+          "name": "POST /flights/create - número duplicado",
           "request": {
             "method": "POST",
             "header": [
@@ -127,7 +127,7 @@
           "response": []
         },
         {
-          "name": "POST /flights/create - salida > llegada ❌",
+          "name": "POST /flights/create - salida > llegada",
           "request": {
             "method": "POST",
             "header": [
@@ -181,10 +181,10 @@
       ]
     },
     {
-      "name": "👤 USUARIOS (sin auth)",
+      "name": "USUARIOS (sin auth)",
       "item": [
         {
-          "name": "POST /users/register ✅",
+          "name": "POST /users/register",
           "event": [
             {
               "listen": "test",
@@ -216,12 +216,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["users", "register"]
             },
-            "description": "Registra un usuario. La respuesta solo incluye el id (Nice to Have ✅)."
+            "description": "Registra un usuario. La respuesta solo incluye el id (Nice to Have)."
           },
           "response": []
         },
         {
-          "name": "POST /users/register - email inválido ❌",
+          "name": "POST /users/register - email inválido",
           "request": {
             "method": "POST",
             "header": [
@@ -241,7 +241,7 @@
           "response": []
         },
         {
-          "name": "POST /users/register - nombre sin mayúscula ❌",
+          "name": "POST /users/register - nombre sin mayúscula",
           "request": {
             "method": "POST",
             "header": [
@@ -261,7 +261,7 @@
           "response": []
         },
         {
-          "name": "POST /users/register - contraseña débil ❌",
+          "name": "POST /users/register - contraseña débil",
           "request": {
             "method": "POST",
             "header": [
@@ -281,7 +281,7 @@
           "response": []
         },
         {
-          "name": "GET /users/{id} ✅",
+          "name": "GET /users/{id}",
           "request": {
             "method": "GET",
             "header": [
@@ -299,10 +299,10 @@
       ]
     },
     {
-      "name": "🔐 AUTH",
+      "name": "AUTH",
       "item": [
         {
-          "name": "POST /auth/login ✅",
+          "name": "POST /auth/login",
           "event": [
             {
               "listen": "test",
@@ -339,7 +339,7 @@
           "response": []
         },
         {
-          "name": "POST /auth/login - email desconocido ❌",
+          "name": "POST /auth/login - email desconocido",
           "request": {
             "method": "POST",
             "header": [
@@ -359,7 +359,7 @@
           "response": []
         },
         {
-          "name": "POST /auth/login - contraseña incorrecta ❌",
+          "name": "POST /auth/login - contraseña incorrecta",
           "request": {
             "method": "POST",
             "header": [
@@ -381,10 +381,10 @@
       ]
     },
     {
-      "name": "🔍 BÚSQUEDA DE VUELOS (con auth)",
+      "name": "BÚSQUEDA DE VUELOS (con auth)",
       "item": [
         {
-          "name": "GET /flights/search - todos ✅",
+          "name": "GET /flights/search - todos",
           "request": {
             "method": "GET",
             "header": [
@@ -400,7 +400,7 @@
           "response": []
         },
         {
-          "name": "GET /flights/search - por número parcial ✅",
+          "name": "GET /flights/search - por número parcial",
           "request": {
             "method": "GET",
             "header": [
@@ -414,12 +414,12 @@
                 { "key": "flightNumber", "value": "LA" }
               ]
             },
-            "description": "Búsqueda parcial por número de vuelo (Must Have ✅)."
+            "description": "Búsqueda parcial por número de vuelo (Must Have)."
           },
           "response": []
         },
         {
-          "name": "GET /flights/search - por aerolínea parcial ✅",
+          "name": "GET /flights/search - por aerolínea parcial",
           "request": {
             "method": "GET",
             "header": [
@@ -433,12 +433,12 @@
                 { "key": "airline", "value": "LATAM" }
               ]
             },
-            "description": "Búsqueda parcial por nombre de aerolínea (Must Have ✅)."
+            "description": "Búsqueda parcial por nombre de aerolínea (Must Have)."
           },
           "response": []
         },
         {
-          "name": "GET /flights/search - por rango de fechas ✅ (Nice to Have)",
+          "name": "GET /flights/search - por rango de fechas (Nice to Have)",
           "request": {
             "method": "GET",
             "header": [
@@ -453,12 +453,12 @@
                 { "key": "endDate", "value": "2026-12-31T23:59:59" }
               ]
             },
-            "description": "Filtro por rango de fechas de salida (Nice to Have ✅)."
+            "description": "Filtro por rango de fechas de salida (Nice to Have)."
           },
           "response": []
         },
         {
-          "name": "GET /flights/search - sin token ❌",
+          "name": "GET /flights/search - sin token",
           "request": {
             "method": "GET",
             "header": [],
@@ -472,7 +472,7 @@
           "response": []
         },
         {
-          "name": "GET /flights/{id} ✅",
+          "name": "GET /flights/{id}",
           "request": {
             "method": "GET",
             "header": [
@@ -490,10 +490,10 @@
       ]
     },
     {
-      "name": "📋 RESERVAS (con auth)",
+      "name": "RESERVAS (con auth)",
       "item": [
         {
-          "name": "POST /flights/book ✅",
+          "name": "POST /flights/book",
           "event": [
             {
               "listen": "test",
@@ -533,7 +533,7 @@
           "response": []
         },
         {
-          "name": "POST /flights/book - conflicto de horario ❌ (Nice to Have)",
+          "name": "POST /flights/book - conflicto de horario (Nice to Have)",
           "request": {
             "method": "POST",
             "header": [
@@ -549,12 +549,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["flights", "book"]
             },
-            "description": "Debe retornar error porque el vuelo IB999 solapa horario con LA500 ya reservado (Nice to Have ✅)."
+            "description": "Debe retornar error porque el vuelo IB999 solapa horario con LA500 ya reservado (Nice to Have)."
           },
           "response": []
         },
         {
-          "name": "POST /flights/book - vuelo inexistente ❌",
+          "name": "POST /flights/book - vuelo inexistente",
           "request": {
             "method": "POST",
             "header": [
@@ -575,7 +575,7 @@
           "response": []
         },
         {
-          "name": "GET /flights/book/{id} ✅",
+          "name": "GET /flights/book/{id}",
           "request": {
             "method": "GET",
             "header": [
@@ -591,7 +591,7 @@
           "response": []
         },
         {
-          "name": "GET /bookings ✅",
+          "name": "GET /bookings",
           "request": {
             "method": "GET",
             "header": [
@@ -607,7 +607,7 @@
           "response": []
         },
         {
-          "name": "GET /bookings/{id} ✅",
+          "name": "GET /bookings/{id}",
           "request": {
             "method": "GET",
             "header": [
@@ -625,7 +625,7 @@
       ]
     },
     {
-      "name": "🎯 FLUJO COMPLETO (E2E)",
+      "name": "FLUJO COMPLETO (E2E)",
       "item": [
         {
           "name": "1. Limpiar BD",
