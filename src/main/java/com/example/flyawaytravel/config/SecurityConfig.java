@@ -32,7 +32,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST,   "/users/register").permitAll()
                 .requestMatchers(HttpMethod.POST,   "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST,   "/flights/create").permitAll()
-                .requestMatchers(HttpMethod.POST,   "/flights/create-many").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/cleanup").permitAll()
                 .anyRequest().authenticated()
             )
