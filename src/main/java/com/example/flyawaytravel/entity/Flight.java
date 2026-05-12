@@ -22,13 +22,13 @@ public class Flight {
     @Column(unique = true, nullable = false, length = 10)
     private String flightNumber;
 
-    @Column(nullable = false)
+    @Column(name = "airline", nullable = false)
     private String airlineName;
 
-    @Column(nullable = false)
+    @Column(name = "departure_time", nullable = false)
     private OffsetDateTime estDepartureTime;
 
-    @Column(nullable = false)
+    @Column(name = "arrival_time", nullable = false)
     private OffsetDateTime estArrivalTime;
 
     @Column(nullable = false)
