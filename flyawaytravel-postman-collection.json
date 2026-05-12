@@ -1,772 +1,279 @@
 {
-  "info": {
-    "name": "FlyAway Travel API",
-    "_postman_id": "flyawaytravel-collection-v1",
-    "description": "Colección completa para el API de reserva de vuelos FlyAway Travel. Incluye todas las misiones Must Have y Nice to Have.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8081",
-      "type": "string"
-    },
-    {
-      "key": "token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "userId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "flightId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "bookingId",
-      "value": "",
-      "type": "string"
-    }
-  ],
-  "item": [
-    {
-      "name": "CLEANUP",
-      "item": [
-        {
-          "name": "DELETE /cleanup",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('BD limpiada', () => {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json.message).to.include('cleaned');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/cleanup",
-              "host": ["{{baseUrl}}"],
-              "path": ["cleanup"]
-            },
-            "description": "Limpia completamente la base de datos. Sin protección JWT."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "VUELOS (sin auth)",
-      "item": [
-        {
-          "name": "POST /flights/create",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Tiene flightNumber', () => {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json.flightNumber).to.exist;",
-                  "    pm.collectionVariables.set('flightId', json.id);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightNumber\": \"LA500\",\n  \"airline\": \"LATAM Airlines\",\n  \"departureTime\": \"2026-12-01T08:00:00\",\n  \"arrivalTime\": \"2026-12-01T12:00:00\",\n  \"availableSeats\": 150,\n  \"origin\": \"Lima\",\n  \"destination\": \"Bogotá\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/flights/create",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "create"]
-            },
-            "description": "Crea un vuelo. Sin protección JWT. El ID se guarda automáticamente en {{flightId}}."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /flights/create - número duplicado",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightNumber\": \"LA500\",\n  \"airline\": \"Avianca\",\n  \"departureTime\": \"2026-12-02T10:00:00\",\n  \"arrivalTime\": \"2026-12-02T14:00:00\",\n  \"availableSeats\": 80,\n  \"origin\": \"Lima\",\n  \"destination\": \"Santiago\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/flights/create",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "create"]
-            },
-            "description": "Debe retornar 400 porque el número de vuelo LA500 ya existe."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /flights/create - salida > llegada",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightNumber\": \"AA001\",\n  \"airline\": \"American\",\n  \"departureTime\": \"2026-12-01T15:00:00\",\n  \"arrivalTime\": \"2026-12-01T10:00:00\",\n  \"availableSeats\": 50,\n  \"origin\": \"Lima\",\n  \"destination\": \"Miami\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/flights/create",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "create"]
-            },
-            "description": "Debe retornar error porque la hora de salida es posterior a la de llegada."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /flights/create - vuelo 2 (para conflicto)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "if (json.id) pm.collectionVariables.set('flightId2', json.id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightNumber\": \"IB999\",\n  \"airline\": \"Iberia\",\n  \"departureTime\": \"2026-12-01T09:00:00\",\n  \"arrivalTime\": \"2026-12-01T11:30:00\",\n  \"availableSeats\": 200,\n  \"origin\": \"Lima\",\n  \"destination\": \"Madrid\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/flights/create",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "create"]
-            },
-            "description": "Vuelo con horario solapado con LA500 — para testear conflicto de reservas."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "USUARIOS (sin auth)",
-      "item": [
-        {
-          "name": "POST /users/register",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Solo retorna id (Nice to Have)', () => {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json.id).to.exist;",
-                  "    pm.expect(json.email).to.not.exist;",
-                  "    pm.collectionVariables.set('userId', json.id);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"tadeo.cardenas@ejercito.pe\",\n  \"firstName\": \"Tadeo\",\n  \"lastName\": \"Cardenas\",\n  \"password\": \"Coronel123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "register"]
-            },
-            "description": "Registra un usuario. La respuesta solo incluye el id (Nice to Have)."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /users/register - email inválido",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"no-es-un-email\",\n  \"firstName\": \"Tadeo\",\n  \"lastName\": \"Cardenas\",\n  \"password\": \"Coronel123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "register"]
-            },
-            "description": "Debe retornar 400 por email inválido."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /users/register - nombre sin mayúscula",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"otro@correo.com\",\n  \"firstName\": \"tadeo\",\n  \"lastName\": \"cardenas\",\n  \"password\": \"Coronel123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "register"]
-            },
-            "description": "Debe retornar 400 porque el nombre no empieza con mayúscula."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /users/register - contraseña débil",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"test2@correo.com\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Lopez\",\n  \"password\": \"password\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "register"]
-            },
-            "description": "Debe retornar 400 porque la contraseña no tiene números."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /users/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}"]
-            },
-            "description": "Obtiene datos de un usuario por su ID."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "AUTH",
-      "item": [
-        {
-          "name": "POST /auth/login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Retorna token JWT', () => {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json.token).to.exist;",
-                  "    pm.collectionVariables.set('token', json.token);",
-                  "    console.log('Token guardado:', json.token.substring(0, 30) + '...');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"tadeo.cardenas@ejercito.pe\",\n  \"password\": \"Coronel123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
-            },
-            "description": "Login. Guarda automáticamente el JWT en {{token}} para usarlo en los demás requests."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /auth/login - email desconocido",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"noexiste@correo.com\",\n  \"password\": \"Coronel123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
-            },
-            "description": "Debe retornar 400 porque el email no está registrado."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /auth/login - contraseña incorrecta",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"tadeo.cardenas@ejercito.pe\",\n  \"password\": \"WrongPass999\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
-            },
-            "description": "Debe retornar 400 por contraseña incorrecta."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "BÚSQUEDA DE VUELOS (con auth)",
-      "item": [
-        {
-          "name": "GET /flights/search - todos",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/flights/search",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "search"]
-            },
-            "description": "Retorna todos los vuelos disponibles (sin filtros)."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /flights/search - por número parcial",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/flights/search?flightNumber=LA",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "search"],
-              "query": [
-                { "key": "flightNumber", "value": "LA" }
-              ]
-            },
-            "description": "Búsqueda parcial por número de vuelo (Must Have)."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /flights/search - por aerolínea parcial",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/flights/search?airline=LATAM",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "search"],
-              "query": [
-                { "key": "airline", "value": "LATAM" }
-              ]
-            },
-            "description": "Búsqueda parcial por nombre de aerolínea (Must Have)."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /flights/search - por rango de fechas (Nice to Have)",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/flights/search?startDate=2026-11-01T00:00:00&endDate=2026-12-31T23:59:59",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "search"],
-              "query": [
-                { "key": "startDate", "value": "2026-11-01T00:00:00" },
-                { "key": "endDate", "value": "2026-12-31T23:59:59" }
-              ]
-            },
-            "description": "Filtro por rango de fechas de salida (Nice to Have)."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /flights/search - sin token",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/flights/search",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "search"]
-            },
-            "description": "Debe retornar 401/403 porque falta el token JWT."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /flights/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/flights/{{flightId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "{{flightId}}"]
-            },
-            "description": "Obtiene un vuelo por ID."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "RESERVAS (con auth)",
-      "item": [
-        {
-          "name": "POST /flights/book",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Reserva creada correctamente', () => {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json.id).to.exist;",
-                  "    pm.expect(json.customerName).to.exist;",
-                  "    pm.expect(json.bookingDate).to.exist;",
-                  "    pm.expect(json.flight).to.exist;",
-                  "    pm.collectionVariables.set('bookingId', json.id);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightId\": {{flightId}}\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/flights/book",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "book"]
-            },
-            "description": "Crea una reserva. El customerName y bookingDate se calculan automáticamente. Guarda {{bookingId}}."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /flights/book - conflicto de horario (Nice to Have)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightId\": {{flightId2}}\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/flights/book",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "book"]
-            },
-            "description": "Debe retornar error porque el vuelo IB999 solapa horario con LA500 ya reservado (Nice to Have)."
-          },
-          "response": []
-        },
-        {
-          "name": "POST /flights/book - vuelo inexistente",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightId\": 99999\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/flights/book",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "book"]
-            },
-            "description": "Debe retornar 400 porque el vuelo no existe."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /flights/book/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/flights/book/{{bookingId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "book", "{{bookingId}}"]
-            },
-            "description": "Obtiene una reserva específica por ID."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /bookings",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/bookings",
-              "host": ["{{baseUrl}}"],
-              "path": ["bookings"]
-            },
-            "description": "Lista todas las reservas del usuario autenticado."
-          },
-          "response": []
-        },
-        {
-          "name": "GET /bookings/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["bookings", "{{bookingId}}"]
-            },
-            "description": "Obtiene una reserva por ID."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "FLUJO COMPLETO (E2E)",
-      "item": [
-        {
-          "name": "1. Limpiar BD",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": { "raw": "{{baseUrl}}/cleanup", "host": ["{{baseUrl}}"], "path": ["cleanup"] }
-          },
-          "response": []
-        },
-        {
-          "name": "2. Crear vuelo",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.collectionVariables.set('flightId', json.id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightNumber\": \"PE001\",\n  \"airline\": \"Peru Airlines\",\n  \"departureTime\": \"2026-12-15T08:00:00\",\n  \"arrivalTime\": \"2026-12-15T16:00:00\",\n  \"availableSeats\": 10,\n  \"origin\": \"Lima\",\n  \"destination\": \"Buenos Aires\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/flights/create", "host": ["{{baseUrl}}"], "path": ["flights", "create"] }
-          },
-          "response": []
-        },
-        {
-          "name": "3. Registrar usuario",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.collectionVariables.set('userId', json.id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"test.e2e@flyaway.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Usuario\",\n  \"password\": \"TestPass1\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/users/register", "host": ["{{baseUrl}}"], "path": ["users", "register"] }
-          },
-          "response": []
-        },
-        {
-          "name": "4. Login → guardar token",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.collectionVariables.set('token', json.token);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"test.e2e@flyaway.com\",\n  \"password\": \"TestPass1\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
-          },
-          "response": []
-        },
-        {
-          "name": "5. Buscar vuelo",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": {
-              "raw": "{{baseUrl}}/flights/search?airline=Peru",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "search"],
-              "query": [{ "key": "airline", "value": "Peru" }]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "6. Reservar vuelo",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.collectionVariables.set('bookingId', json.id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"flightId\": {{flightId}}\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/flights/book", "host": ["{{baseUrl}}"], "path": ["flights", "book"] }
-          },
-          "response": []
-        },
-        {
-          "name": "7. Ver reserva creada",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": {
-              "raw": "{{baseUrl}}/flights/book/{{bookingId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["flights", "book", "{{bookingId}}"]
-            }
-          },
-          "response": []
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "flyawaytravel-api-collection",
+		"name": "FlyawayTravel API",
+		"description": "API collection for FlyawayTravel flight booking system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "register"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Flights",
+			"item": [
+				{
+					"name": "Create Flight",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"airlineName\": \"American Airlines\",\n    \"flightNumber\": \"AA1234\",\n    \"estDepartureTime\": \"2029-06-15T10:00:00Z\",\n    \"estArrivalTime\": \"2029-06-15T13:00:00Z\",\n    \"availableSeats\": 150\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/flights/create",
+							"host": ["{{baseUrl}}"],
+							"path": ["flights", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Multiple Flights",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"inputs\": [\n        {\n            \"airlineName\": \"LATAM Airlines\",\n            \"flightNumber\": \"LA500\",\n            \"estDepartureTime\": \"2026-12-01T08:00:00Z\",\n            \"estArrivalTime\": \"2026-12-01T12:00:00Z\",\n            \"availableSeats\": 150\n        },\n        {\n            \"airlineName\": \"Delta Airlines\",\n            \"flightNumber\": \"DL789\",\n            \"estDepartureTime\": \"2026-11-15T14:30:00Z\",\n            \"estArrivalTime\": \"2026-11-15T18:45:00Z\",\n            \"availableSeats\": 120\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/flights/create-many",
+							"host": ["{{baseUrl}}"],
+							"path": ["flights", "create-many"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Flights",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights/search?flightNumber=AA1234&airlineName=American Airlines&estDepartureTimeFrom=2029-06-01T00:00:00Z&estDepartureTimeTo=2029-06-30T23:59:59Z",
+							"host": ["{{baseUrl}}"],
+							"path": ["flights", "search"],
+							"query": [
+								{
+									"key": "flightNumber",
+									"value": "AA1234",
+									"description": "Optional: Filter by flight number"
+								},
+								{
+									"key": "airlineName",
+									"value": "American Airlines",
+									"description": "Optional: Filter by airline name"
+								},
+								{
+									"key": "estDepartureTimeFrom",
+									"value": "2029-06-01T00:00:00Z",
+									"description": "Optional: Filter by departure time from"
+								},
+								{
+									"key": "estDepartureTimeTo",
+									"value": "2029-06-30T23:59:59Z",
+									"description": "Optional: Filter by departure time to"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flight by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["flights", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "Book Flight",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flightId\": 1,\n    \"passengerName\": \"John Doe\",\n    \"passengerEmail\": \"john.doe@example.com\",\n    \"seatCount\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/flights/book",
+							"host": ["{{baseUrl}}"],
+							"path": ["flights", "book"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/flights/book/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["flights", "book", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["bookings"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific Booking",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bookings/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["bookings", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "jwtToken",
+			"value": "",
+			"type": "string"
+		}
+	]
 }
