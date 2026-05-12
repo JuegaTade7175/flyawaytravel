@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @RequiredArgsConstructor
 public class CleanupController {
@@ -21,10 +19,10 @@ public class CleanupController {
 
     @DeleteMapping("/cleanup")
     @Transactional
-    public ResponseEntity<Map<String, String>> cleanup() {
+    public ResponseEntity<Void> cleanup() {
         bookingRepository.deleteAll();
         flightRepository.deleteAll();
         userRepository.deleteAll();
-        return ResponseEntity.ok(Map.of("message", "Database cleaned successfully"));
+        return ResponseEntity.ok().build();
     }
 }

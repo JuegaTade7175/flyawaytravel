@@ -10,19 +10,20 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UserRegisterRequest {
 
+    @NotBlank(message = "email is required")
     @Email(message = "Invalid email format")
-    @NotBlank(message = "Email is required")
     private String email;
 
-    @Pattern(regexp = "^[A-Z][a-zA-Z]*$", message = "First name must start with uppercase letter and contain only letters")
-    @NotBlank(message = "First name is required")
+    @NotBlank(message = "firstName is required")
+    @Pattern(regexp = "^[A-Z].*$", message = "First name must start with uppercase letter A-Z")
     private String firstName;
 
-    @Pattern(regexp = "^[A-Z][a-zA-Z]*$", message = "Last name must start with uppercase letter and contain only letters")
-    @NotBlank(message = "Last name is required")
+    @NotBlank(message = "lastName is required")
+    @Pattern(regexp = "^[A-Z].*$", message = "Last name must start with uppercase letter A-Z")
     private String lastName;
 
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$", message = "Password must be at least 8 characters long and contain at least 1 letter and 1 number")
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "password is required")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$",
+             message = "Password must be at least 8 characters with at least one letter and one number")
     private String password;
 }

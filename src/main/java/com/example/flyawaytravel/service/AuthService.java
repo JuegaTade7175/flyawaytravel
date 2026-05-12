@@ -18,9 +18,9 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userService.findByEmail(request.getEmail());
-        
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid password");
+            throw new IllegalArgumentException("Invalid credentials");
         }
 
         String token = jwtService.generateToken(user.getEmail());

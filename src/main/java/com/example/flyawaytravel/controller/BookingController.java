@@ -2,12 +2,12 @@ package com.example.flyawaytravel.controller;
 
 import com.example.flyawaytravel.dto.request.BookingRequest;
 import com.example.flyawaytravel.dto.response.BookingResponse;
+import com.example.flyawaytravel.dto.response.NewIdResponse;
 import com.example.flyawaytravel.entity.User;
 import com.example.flyawaytravel.repository.UserRepository;
 import com.example.flyawaytravel.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,38 +23,34 @@ public class BookingController {
     private final UserRepository userRepository;
 
     @PostMapping("/flights/book")
-    public ResponseEntity<BookingResponse> bookFlight(@Valid @RequestBody BookingRequest request) {
+    public ResponseEntity<NewIdResponse> bookFlight(@Valid @RequestBody BookingRequest request) {
         Long userId = getAuthenticatedUserId();
         BookingResponse response = bookingService.createBooking(request, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok(new NewIdResponse(response.getId()));
     }
 
     @GetMapping("/flights/book/{id}")
     public ResponseEntity<BookingResponse> getBookingById(@PathVariable Long id) {
-        Long userId = getAuthenticatedUserId();
-        BookingResponse response = bookingService.getBookingById(id, userId);
+        BookingResponse response = bookingService.getBookingById(id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/bookings")
     public ResponseEntity<List<BookingResponse>> getUserBookings() {
         Long userId = getAuthenticatedUserId();
-        List<BookingResponse> bookings = bookingService.getUserBookings(userId);
-        return ResponseEntity.ok(bookings);
+        return ResponseEntity.ok(bookingService.getUserBookings(userId));
     }
 
     @GetMapping("/bookings/{id}")
     public ResponseEntity<BookingResponse> getBooking(@PathVariable Long id) {
-        Long userId = getAuthenticatedUserId();
-        BookingResponse response = bookingService.getBookingById(id, userId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(bookingService.getBookingById(id));
     }
 
     private Long getAuthenticatedUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return user.getId();
     }
 }

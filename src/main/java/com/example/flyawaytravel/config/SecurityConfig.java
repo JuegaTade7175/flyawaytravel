@@ -27,11 +27,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/flights/create").permitAll()
+                .requestMatchers(HttpMethod.POST,   "/users/register").permitAll()
+                .requestMatchers(HttpMethod.POST,   "/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST,   "/flights/create").permitAll()
+                .requestMatchers(HttpMethod.POST,   "/flights/create-many").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/cleanup").permitAll()
                 .anyRequest().authenticated()
             )

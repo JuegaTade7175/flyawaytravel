@@ -2,19 +2,18 @@ package com.example.flyawaytravel.service;
 
 import com.example.flyawaytravel.dto.request.BookingRequest;
 import com.example.flyawaytravel.dto.response.BookingResponse;
-import com.example.flyawaytravel.dto.response.FlightResponse;
 import com.example.flyawaytravel.entity.Booking;
 import com.example.flyawaytravel.entity.Flight;
 import com.example.flyawaytravel.entity.User;
 import com.example.flyawaytravel.repository.BookingRepository;
 import com.example.flyawaytravel.repository.FlightRepository;
+import com.example.flyawaytravel.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,78 +22,73 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final FlightRepository flightRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final EmailConfirmationService emailConfirmationService;
 
     public BookingResponse createBooking(BookingRequest request, Long userId) {
-        User user = userService.findById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
         Flight flight = flightRepository.findById(request.getFlightId())
-                .orElseThrow(() -> new IllegalArgumentException("Vuelo no encontrado con el id: " + request.getFlightId()));
+                .orElseThrow(() -> new IllegalArgumentException("Flight not found: " + request.getFlightId()));
 
-        LocalDateTime now = LocalDateTime.now();
-        if (!flight.getDepartureTime().isAfter(now)) {
-            throw new IllegalArgumentException("No se pueden reservar vuelos pasados o en tránsito");
-        }
-        if (flight.getAvailableSeats() <= 0) {
-            throw new IllegalArgumentException("No hay asientos disponibles para este vuelo");
+        OffsetDateTime now = OffsetDateTime.now();
+        if (!flight.getEstDepartureTime().isAfter(now)) {
+            throw new IllegalArgumentException("Cannot book a past or in-transit flight");
         }
 
-        int currentBookings = bookingRepository.countBookingsByFlightId(flight.getId());
+        int currentBookings = bookingRepository.countByFlightId(flight.getId());
         if (currentBookings >= flight.getAvailableSeats()) {
-            throw new IllegalArgumentException("El vuelo está completamente reservado");
+            throw new IllegalArgumentException("Flight is fully booked");
         }
 
-        List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(
-                user,
-                flight.getDepartureTime(), flight.getArrivalTime(),
-                flight.getDepartureTime(), flight.getArrivalTime()
+        List<Booking> overlapping = bookingRepository.findOverlapping(
+                userId,
+                flight.getId(),
+                flight.getEstDepartureTime(),
+                flight.getEstArrivalTime()
         );
-        if (!conflictingBookings.isEmpty()) {
-            throw new IllegalArgumentException("Tienes una reserva conflictiva con este horario de vuelo");
+        if (!overlapping.isEmpty()) {
+            throw new IllegalArgumentException("Booking overlaps with an existing booking");
         }
 
         Booking booking = new Booking();
         booking.setFlight(flight);
         booking.setUser(user);
-        booking.setCustomerName(user.getFullName());
         booking.setBookingDate(now);
 
-        Booking savedBooking = bookingRepository.save(booking);
-        emailConfirmationService.saveConfirmationEmail(savedBooking);
-        return toResponse(savedBooking);
+        Booking saved = bookingRepository.save(booking);
+
+        emailConfirmationService.saveConfirmationEmail(saved);
+
+        return toResponse(saved);
     }
 
-    public BookingResponse getBookingById(Long id, Long userId) {
-        Booking booking = bookingRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con el id: " + id));
+    public BookingResponse getBookingById(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + id));
         return toResponse(booking);
     }
 
     public List<BookingResponse> getUserBookings(Long userId) {
-        return bookingRepository.findByUserId(userId)
-                .stream()
+        return bookingRepository.findByUserId(userId).stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private BookingResponse toResponse(Booking booking) {
-        Flight flight = booking.getFlight();
-        FlightResponse flightResponse = new FlightResponse(
-                flight.getId(),
-                flight.getFlightNumber(),
-                flight.getAirline(),
-                flight.getDepartureTime(),
-                flight.getArrivalTime(),
-                flight.getAvailableSeats(),
-                flight.getOrigin(),
-                flight.getDestination(),
-                flight.getCreatedAt()
-        );
-        return new BookingResponse(
-                booking.getId(),
-                flightResponse,
-                booking.getCustomerName(),
-                booking.getBookingDate()
-        );
+        Flight f = booking.getFlight();
+        User u = booking.getUser();
+        BookingResponse r = new BookingResponse();
+        r.setId(booking.getId());
+        r.setBookingDate(booking.getBookingDate());
+        r.setFlightId(f.getId());
+        r.setFlightNumber(f.getFlightNumber());
+        r.setCustomerId(u.getId());
+        r.setCustomerFirstName(u.getFirstName());
+        r.setCustomerLastName(u.getLastName());
+        r.setEstDepartureTime(f.getEstDepartureTime());
+        r.setEstArrivalTime(f.getEstArrivalTime());
+        return r;
     }
 }

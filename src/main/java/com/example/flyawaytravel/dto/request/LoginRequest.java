@@ -1,6 +1,6 @@
 package com.example.flyawaytravel.dto.request;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -10,10 +10,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
 
-    @Email(message = "Invalid email format")
-    @NotBlank(message = "Email is required")
+    @NotBlank(message = "email is required")
     private String email;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "password is required")
     private String password;
 }

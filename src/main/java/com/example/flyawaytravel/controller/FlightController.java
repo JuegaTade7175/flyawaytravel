@@ -1,17 +1,21 @@
 package com.example.flyawaytravel.controller;
 
+import com.example.flyawaytravel.dto.request.FlightCreateManyRequest;
 import com.example.flyawaytravel.dto.request.FlightCreateRequest;
+import com.example.flyawaytravel.dto.response.FlightCreateManyResponse;
 import com.example.flyawaytravel.dto.response.FlightResponse;
+import com.example.flyawaytravel.dto.response.FlightSearchResponse;
+import com.example.flyawaytravel.dto.response.NewIdResponse;
 import com.example.flyawaytravel.service.FlightService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/flights")
@@ -21,24 +25,46 @@ public class FlightController {
     private final FlightService flightService;
 
     @PostMapping("/create")
-    public ResponseEntity<FlightResponse> createFlight(@Valid @RequestBody FlightCreateRequest request) {
+    public ResponseEntity<NewIdResponse> createFlight(@Valid @RequestBody FlightCreateRequest request) {
         FlightResponse response = flightService.createFlight(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new NewIdResponse(response.getId()));
+    }
+
+    @PostMapping("/create-many")
+    public ResponseEntity<FlightCreateManyResponse> createManyFlights(
+            @Valid @RequestBody FlightCreateManyRequest request) {
+
+        List<Long> ids = new ArrayList<>();
+
+        CompletableFuture.runAsync(() -> {
+            for (var flightReq : request.getInputs()) {
+                try {
+                    FlightResponse r = flightService.createFlight(flightReq);
+                    synchronized (ids) {
+                        ids.add(r.getId());
+                    }
+                } catch (Exception e) {
+                }
+            }
+        });
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new FlightCreateManyResponse(ids));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<FlightResponse>> searchFlights(
+    public ResponseEntity<FlightSearchResponse> searchFlights(
             @RequestParam(required = false) String flightNumber,
-            @RequestParam(required = false) String airline,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        List<FlightResponse> flights = flightService.searchFlights(flightNumber, airline, startDate, endDate);
-        return ResponseEntity.ok(flights);
+            @RequestParam(required = false) String airlineName,
+            @RequestParam(required = false) String estDepartureTimeFrom,
+            @RequestParam(required = false) String estDepartureTimeTo) {
+
+        FlightSearchResponse response = flightService.searchFlights(
+                flightNumber, airlineName, estDepartureTimeFrom, estDepartureTimeTo);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FlightResponse> getFlightById(@PathVariable Long id) {
-        FlightResponse response = flightService.getFlightById(id);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(flightService.getFlightById(id));
     }
 }

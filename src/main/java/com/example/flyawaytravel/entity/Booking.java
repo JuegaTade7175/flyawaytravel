@@ -4,9 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "bookings")
@@ -28,22 +27,12 @@ public class Booking {
     private User user;
 
     @Column(nullable = false)
-    private String customerName;
-
-    @CreationTimestamp
-    @Column(name = "booking_date", nullable = false, updatable = false)
-    private LocalDateTime bookingDate;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime bookingDate;
 
     @PrePersist
     private void prePersist() {
-        if (customerName == null && user != null) {
-            customerName = user.getFullName();
-        }
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+        if (bookingDate == null) {
+            bookingDate = OffsetDateTime.now();
         }
     }
 }

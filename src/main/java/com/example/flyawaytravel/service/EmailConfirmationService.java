@@ -12,37 +12,37 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class EmailConfirmationService {
 
-    private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     public void saveConfirmationEmail(Booking booking) {
         String filename = "flight_booking_email_" + booking.getId() + ".txt";
 
-        String content = buildEmailContent(booking);
+        String customerFirstName = booking.getUser().getFirstName();
+        String customerLastName  = booking.getUser().getLastName();
+        String flightNumber      = booking.getFlight().getFlightNumber();
+        String estDeparture      = booking.getFlight().getEstDepartureTime().format(FORMATTER);
+        String estArrival        = booking.getFlight().getEstArrivalTime().format(FORMATTER);
+        String bookingDate       = booking.getBookingDate().format(FORMATTER);
+
+        String content = String.format(
+            "Hello %s %s,\n\n" +
+            "Your booking was successful! \n\n" +
+            "The booking is for flight %s with departure date of %s and arrival date of %s.\n\n" +
+            "The booking was registered at %s.\n\n" +
+            "Bon Voyage!\n" +
+            "Fly Away Travel\n",
+            customerFirstName, customerLastName,
+            flightNumber,
+            estDeparture,
+            estArrival,
+            bookingDate
+        );
 
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write(content);
-            log.info("Correo de confirmación guardado en archivo: {}", filename);
+            log.info("Confirmation email saved: {}", filename);
         } catch (IOException e) {
-            log.error("Error al guardar correo de confirmación para reserva {}: {}", booking.getId(), e.getMessage());
+            log.error("Error saving confirmation email for booking {}: {}", booking.getId(), e.getMessage());
         }
-    }
-
-    private String buildEmailContent(Booking booking) {
-        return "========================================\n" +
-               "       CONFIRMACIÓN DE RESERVA DE VUELO      \n" +
-               "========================================\n\n" +
-               "ID de Reserva: " + booking.getId() + "\n" +
-               "Nombre del Cliente: " + booking.getCustomerName() + "\n" +
-               "Fecha de Reserva: " + booking.getBookingDate().format(ISO_FORMATTER) + "\n\n" +
-               "--- Detalles del Vuelo ---\n" +
-               "Número de Vuelo: " + booking.getFlight().getFlightNumber() + "\n" +
-               "Aerolínea: " + booking.getFlight().getAirline() + "\n" +
-               "Origen: " + booking.getFlight().getOrigin() + "\n" +
-               "Destino: " + booking.getFlight().getDestination() + "\n" +
-               "Hora de Salida: " + booking.getFlight().getDepartureTime().format(ISO_FORMATTER) + "\n" +
-               "Hora de Llegada: " + booking.getFlight().getArrivalTime().format(ISO_FORMATTER) + "\n\n" +
-               "========================================\n" +
-               "¡Gracias por elegir Fly Away Travel!\n" +
-               "========================================\n";
     }
 }
