@@ -20,7 +20,9 @@ public class EmailConfirmationService {
         String filename = "flight_booking_email_" + booking.getId() + ".txt";
 
         try {
-            String bookingDate  = booking.getBookingDate().toInstant().toString();
+            String bookingDate = booking.getBookingDate()
+                .truncatedTo(java.time.temporal.ChronoUnit.MICROS)
+                .toInstant().toString();
             String estDeparture = booking.getFlight().getEstDepartureTime().toInstant().toString();
             String estArrival   = booking.getFlight().getEstArrivalTime().toInstant().toString();
 
