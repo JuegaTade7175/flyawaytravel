@@ -10,6 +10,7 @@ NUEVA MISIÓN
 DESBLOQUEADA
 Endpoint: POST /flights/create (sin protección)
 Constraints:
+- java -jar week07-tester.jar test -u http://localhost:8081 -n
 - Todos los campos son requeridos
 - Número de vuelo: A-Z, 0-9, máximo 6 caracteres (ej: AA984)
 - Hora salida < Hora llegada
