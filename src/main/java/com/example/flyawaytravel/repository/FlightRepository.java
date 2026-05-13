@@ -17,14 +17,14 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
     boolean existsByFlightNumber(String flightNumber);
 
-    @Query("SELECT f FROM Flight f WHERE UPPER(f.flightNumber) LIKE UPPER(CONCAT('%', :flightNumber, '%'))")
+    @Query("SELECT f FROM Flight f WHERE UPPER(f.flightNumber) LIKE UPPER(CONCAT('%', :flightNumber, '%')) ORDER BY f.id ASC")
     List<Flight> findByFlightNumberContaining(@Param("flightNumber") String flightNumber);
 
-    @Query("SELECT f FROM Flight f WHERE UPPER(f.airlineName) LIKE UPPER(CONCAT('%', :airlineName, '%'))")
+    @Query("SELECT f FROM Flight f WHERE UPPER(f.airlineName) LIKE UPPER(CONCAT('%', :airlineName, '%')) ORDER BY f.id ASC")
     List<Flight> findByAirlineNameContaining(@Param("airlineName") String airlineName);
 
     @Query("SELECT f FROM Flight f WHERE UPPER(f.flightNumber) LIKE UPPER(CONCAT('%', :flightNumber, '%')) " +
-           "AND UPPER(f.airlineName) LIKE UPPER(CONCAT('%', :airlineName, '%'))")
+           "AND UPPER(f.airlineName) LIKE UPPER(CONCAT('%', :airlineName, '%')) ORDER BY f.id ASC")
     List<Flight> findByBothContaining(@Param("flightNumber") String flightNumber,
                                       @Param("airlineName") String airlineName);
 

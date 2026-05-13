@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/flights")
@@ -34,21 +32,11 @@ public class FlightController {
     public ResponseEntity<FlightCreateManyResponse> createManyFlights(
             @Valid @RequestBody FlightCreateManyRequest request) {
 
-        List<Long> ids = new ArrayList<>();
+        for (var flightReq : request.getInputs()) {
+            flightService.createFlightAsync(flightReq);
+        }
 
-        CompletableFuture.runAsync(() -> {
-            for (var flightReq : request.getInputs()) {
-                try {
-                    FlightResponse r = flightService.createFlight(flightReq);
-                    synchronized (ids) {
-                        ids.add(r.getId());
-                    }
-                } catch (Exception e) {
-                }
-            }
-        });
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(new FlightCreateManyResponse(ids));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new FlightCreateManyResponse(new ArrayList<>()));
     }
 
     @GetMapping("/search")

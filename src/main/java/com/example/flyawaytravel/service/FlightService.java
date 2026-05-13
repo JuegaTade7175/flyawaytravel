@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,7 @@ public class FlightService {
         }
 
         List<FlightResponse> items = flights.stream()
+                .sorted(Comparator.comparingLong(Flight::getId))
                 .map(this::toResponse)
                 .collect(Collectors.toList());
 
