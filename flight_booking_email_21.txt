@@ -4,7 +4,7 @@ Your booking was successful!
 
 The booking is for flight AA448 with departure date of 2026-05-16T12:00:00Z and arrival date of 2026-05-16T19:00:00Z.
 
-The booking was registered at 2026-05-13T21:30:19.822259Z.
+The booking was registered at 2026-05-13T21:39:20.977274Z.
 
 Bon Voyage!
 Fly Away Travel
