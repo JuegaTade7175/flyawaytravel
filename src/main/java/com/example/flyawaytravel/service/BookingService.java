@@ -32,7 +32,8 @@ public class BookingService {
         Flight flight = flightRepository.findById(request.getFlightId())
                 .orElseThrow(() -> new IllegalArgumentException("Flight not found: " + request.getFlightId()));
 
-        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now()
+            .truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         if (!flight.getEstDepartureTime().isAfter(now)) {
             throw new IllegalArgumentException("Cannot book a past or in-transit flight");
         }
