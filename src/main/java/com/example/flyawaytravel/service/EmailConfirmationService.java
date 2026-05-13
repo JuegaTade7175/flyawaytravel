@@ -20,9 +20,9 @@ public class EmailConfirmationService {
         String filename = "flight_booking_email_" + booking.getId() + ".txt";
 
         try {
-            String bookingDate  = objectMapper.writeValueAsString(booking.getBookingDate()).replace("\"", "");
-            String estDeparture = objectMapper.writeValueAsString(booking.getFlight().getEstDepartureTime()).replace("\"", "");
-            String estArrival   = objectMapper.writeValueAsString(booking.getFlight().getEstArrivalTime()).replace("\"", "");
+            String bookingDate  = booking.getBookingDate().toInstant().toString();
+            String estDeparture = booking.getFlight().getEstDepartureTime().toInstant().toString();
+            String estArrival   = booking.getFlight().getEstArrivalTime().toInstant().toString();
 
             String customerFirstName = booking.getUser().getFirstName();
             String customerLastName  = booking.getUser().getLastName();
